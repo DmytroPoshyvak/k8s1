@@ -17,8 +17,8 @@ kubectl get namespace todoapp
 ## 2. Застосування маніфестів ToDo app та busybox
 
 ```bash
-kubectl apply -f .infrastructure/todoapp-pod.yml -n todoapp
-kubectl apply -f .infrastructure/busybox.yml -n todoapp
+kubectl apply -f .infrastructure/todoapp-pod.yml
+kubectl apply -f .infrastructure/busybox.yml
 ```
 
 Перевірити стан подів (дочекатися статусу `Running` та `1/1 Ready`):
@@ -29,10 +29,10 @@ kubectl get pods -n todoapp -w
 
 ## 3. Тестування ToDo app через port-forward
 
-Прокинути порт з пода на локальну машину (замініть `<port>` на порт, на якому працює застосунок, наприклад 8000):
+Прокинути порт з пода на локальну машину (застосунок слухає порт 8000):
 
 ```bash
-kubectl port-forward pod/todoapp -n todoapp 8000:<port>
+kubectl port-forward pod/todoapp -n todoapp 8000:8000
 ```
 
 Після цього застосунок буде доступний локально:
@@ -41,11 +41,11 @@ kubectl port-forward pod/todoapp -n todoapp 8000:<port>
 curl http://localhost:8000/
 ```
 
-Також можна перевірити readiness та liveness ендпоінти:
+Перевірка readiness та liveness ендпоінтів:
 
 ```bash
-curl http://localhost:8000/api/health/ready
-curl http://localhost:8000/api/health/live
+curl http://localhost:8000/api/readiness/
+curl http://localhost:8000/api/health/
 ```
 
 Зупинити port-forward можна комбінацією `Ctrl+C`.
@@ -58,18 +58,18 @@ curl http://localhost:8000/api/health/live
 kubectl exec -it busybox -n todoapp -- sh
 ```
 
-Виконати запит до ToDo app всередині кластера (звертаємось за IP пода або сервіс-іменем, якщо є Service):
-
-```bash
-curl http://<todoapp-pod-ip>:<port>/
-curl http://<todoapp-pod-ip>:<port>/api/health/ready
-curl http://<todoapp-pod-ip>:<port>/api/health/live
-```
-
-IP пода можна дізнатись командою:
+Дізнатися IP пода todoapp:
 
 ```bash
 kubectl get pod todoapp -n todoapp -o wide
+```
+
+Виконати запит до ToDo app всередині кластера:
+
+```bash
+curl http://<todoapp-pod-ip>:8000/
+curl http://<todoapp-pod-ip>:8000/api/readiness/
+curl http://<todoapp-pod-ip>:8000/api/health/
 ```
 
 Вийти з контейнера — команда `exit`.
